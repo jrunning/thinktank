@@ -15,7 +15,7 @@ class TwitterAPIAccessorOAuth {
     const SearchFormat = 'atom';
 
     # Define method paths ... [id] is a placeholder
-    const MethodPaths = array(
+    private static $MethodPaths = array(
         "end_session"       => "/account/end_session",
         "rate_limit"        => "/account/rate_limit_status",
         "delivery_device"   => "/account/update_delivery_device",

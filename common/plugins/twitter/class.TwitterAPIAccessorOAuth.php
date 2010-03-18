@@ -86,7 +86,7 @@ class TwitterAPIAccessorOAuth {
     function prepAPI() {
         # Construct cURL sources
         $urls = array();
-        foreach (self::MethodPaths as $method => $path) {
+        foreach (self::$MethodPaths as $method => $path) {
             $urls[$method] = self::APIDomain . $path . "." . self::APIFormat;
         }
         $urls['search']     = self::SearchDomain . "/search." . self::SearchFormat;

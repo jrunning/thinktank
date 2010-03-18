@@ -6,7 +6,56 @@ class TwitterAPIAccessorOAuth {
     var $to;
     var $oauth_access_token;
     var $oauth_access_token_secret;
-    var $next_cursor;
+    var $next_cursor;    
+       
+    # Define how to access Twitter API
+    const APIDomain = 'https://twitter.com';
+    const APIFormat = 'xml';
+    const SearchDomain = 'http://search.twitter.com';
+    const SearchFormat = 'atom';
+
+    # Define method paths ... [id] is a placeholder
+    const MethodPaths = array(
+        "end_session"       => "/account/end_session",
+        "rate_limit"        => "/account/rate_limit_status",
+        "delivery_device"   => "/account/update_delivery_device",
+        "location"          => "/account/update_location",
+        "profile"           => "/account/update_profile",
+        "profile_background"    => "/account/update_profile_background_image",
+        "profile_colors"    => "/account/update_profile_colors",
+        "profile_image"     => "/account/update_profile_image",
+        "credentials"       => "/account/verify_credentials",
+        "block"             => "/blocks/create/[id]",
+        "remove_block"      => "/blocks/destroy/[id]",
+        "messages_received" => "/direct_messages",
+        "delete_message"    => "/direct_messages/destroy/[id]",
+        "post_message"      => "/direct_messages/new",
+        "messages_sent"     => "/direct_messages/sent",
+        "bookmarks"         => "/favorites/[id]",
+        "create_bookmark"   => "/favorites/create/[id]",
+        "remove_bookmark"   => "/favorites/destroy/[id]",
+        "followers_ids"     => "/followers/ids",
+        "following_ids"     => "/friends/ids",
+        "follow"            => "/friendships/create/[id]",
+        "unfollow"          => "/friendships/destroy/[id]",
+        "confirm_follow"    => "/friendships/exists",
+        "show_friendship"   => "/friendships/show",
+        "test"              => "/help/test",
+        "turn_on_notification"  => "/notifications/follow/[id]",
+        "turn_off_notification" => "/notifications/leave/[id]",
+        "delete_tweet"      => "/statuses/destroy/[id]",
+        "followers"         => "/statuses/followers",
+        "following"         => "/statuses/friends",
+        "friends_timeline"  => "/statuses/friends_timeline",
+        "public_timeline"   => "/statuses/public_timeline",
+        "mentions"          => "/statuses/mentions",
+        "show_tweet"        => "/statuses/show/[id]",
+        "post_tweet"        => "/statuses/update",
+        "user_timeline"     => "/statuses/user_timeline/[id]",
+        "show_user"         => "/users/show/[id]",
+        "retweeted_by_me"   => "/statuses/retweeted_by_me",
+        "lists"             => "/[id]/lists"
+    );
     
     function TwitterAPIAccessorOAuth($oauth_access_token, $oauth_access_token_secret, $oauth_consumer_key, $oauth_consumer_secret) {
         $this->$oauth_access_token = $oauth_access_token;
@@ -35,23 +84,14 @@ class TwitterAPIAccessorOAuth {
     }
     
     function prepAPI() {
-    
-        # Define how to access Twitter API
-        $api_domain = 'https://twitter.com';
-        $api_format = 'xml';
-        $search_domain = 'http://search.twitter.com';
-        $search_format = 'atom';
-        
-        # Define method paths ... [id] is a placeholder
-        $api_method = array("end_session"=>"/account/end_session", "rate_limit"=>"/account/rate_limit_status", "delivery_device"=>"/account/update_delivery_device", "location"=>"/account/update_location", "profile"=>"/account/update_profile", "profile_background"=>"/account/update_profile_background_image", "profile_colors"=>"/account/update_profile_colors", "profile_image"=>"/account/update_profile_image", "credentials"=>"/account/verify_credentials", "block"=>"/blocks/create/[id]", "remove_block"=>"/blocks/destroy/[id]", "messages_received"=>"/direct_messages", "delete_message"=>"/direct_messages/destroy/[id]", "post_message"=>"/direct_messages/new", "messages_sent"=>"/direct_messages/sent", "bookmarks"=>"/favorites/[id]", "create_bookmark"=>"/favorites/create/[id]", "remove_bookmark"=>"/favorites/destroy/[id]", "followers_ids"=>"/followers/ids", "following_ids"=>"/friends/ids", "follow"=>"/friendships/create/[id]", "unfollow"=>"/friendships/destroy/[id]", "confirm_follow"=>"/friendships/exists", "show_friendship"=>"/friendships/show", "test"=>"/help/test", "turn_on_notification"=>"/notifications/follow/[id]", "turn_off_notification"=>"/notifications/leave/[id]", "delete_tweet"=>"/statuses/destroy/[id]", "followers"=>"/statuses/followers", "following"=>"/statuses/friends", "friends_timeline"=>"/statuses/friends_timeline", "public_timeline"=>"/statuses/public_timeline", "mentions"=>"/statuses/mentions", "show_tweet"=>"/statuses/show/[id]", "post_tweet"=>"/statuses/update", "user_timeline"=>"/statuses/user_timeline/[id]", "show_user"=>"/users/show/[id]", "retweeted_by_me"=>"/statuses/retweeted_by_me");
-        
         # Construct cURL sources
-        foreach ($api_method as $key=>$value) {
-            $urls[$key] = $api_domain.$value.".".$api_format;
+        $urls = array();
+        foreach (self::MethodPaths as $method => $path) {
+            $urls[$method] = self::APIDomain . $path . "." . self::APIFormat;
         }
-        $urls['search'] = $search_domain."/search.".$search_format;
-        $urls['search_web'] = $search_domain."/search";
-        $urls['trends'] = $search_domain."/trends.json";
+        $urls['search']     = self::SearchDomain . "/search." . self::SearchFormat;
+        $urls['search_web'] = self::SearchDomain . "/search";
+        $urls['trends']     = self::SearchDomain . "/trends.json";
         
         return $urls;
     }
@@ -161,6 +201,9 @@ class TwitterAPIAccessorOAuth {
                     case 'relationship':
                         $thisFeed = array('source_follows_target'=>$xml->source->following, 'target_follows_source'=>$xml->target->following);
                         break;
+                    case 'lists_list':
+                        $thisFeed = $this->parseLists($xml->lists->children());
+                        break;
                     default:
                         break;
                 }
@@ -189,6 +232,24 @@ class TwitterAPIAccessorOAuth {
         return $xml;
     }
     
+    private function parseLists($lists) {
+        $lists_parsed = array();
+        foreach ($lists as $list) {
+            $lists_parsed[] = array(
+                'list_id'   => $list->id,
+                'name'      => $list->name,
+                'full_name' => $list->full_name,
+                'slug'      => $list->slug,
+                'description'       => $list->description,
+                'subscriber_count'  => $list->subscriber_count,
+                'member_count'      => $list->member_count,
+                'uri'       => $list->uri,
+                'mode'      => $list->mode
+            );
+        }
+        
+        return $lists_parsed;
+    }
 }
 
 class CrawlerTwitterAPIAccessorOAuth extends TwitterAPIAccessorOAuth {

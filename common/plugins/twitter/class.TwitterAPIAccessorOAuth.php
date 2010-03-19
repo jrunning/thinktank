@@ -54,8 +54,10 @@ class TwitterAPIAccessorOAuth {
         "user_timeline"     => "/statuses/user_timeline/[id]",
         "show_user"         => "/users/show/[id]",
         "retweeted_by_me"   => "/statuses/retweeted_by_me",
-        "lists"             => "/[id]/lists"
+        "lists"             => "/lists"
     );
+    
+    const DateFormat = "Y-m-d H:i:s";
     
     function TwitterAPIAccessorOAuth($oauth_access_token, $oauth_access_token_secret, $oauth_consumer_key, $oauth_consumer_secret) {
         $this->$oauth_access_token = $oauth_access_token;
@@ -163,51 +165,40 @@ class TwitterAPIAccessorOAuth {
                 $root = $xml->getName();
                 switch ($root) {
                     case 'user':
-                        $thisFeed[] = array('user_id'=>$xml->id, 'user_name'=>$xml->screen_name, 'full_name'=>$xml->name, 'avatar'=>$xml->profile_image_url, 'location'=>$xml->location, 'description'=>$xml->description, 'url'=>$xml->url, 'is_protected'=>$xml->protected , 'follower_count'=>$xml->followers_count, 'friend_count'=>$xml->friends_count, 'post_count'=>$xml->statuses_count, 'favorites_count'=>$xml->favourites_count, 'joined'=>gmdate("Y-m-d H:i:s", strToTime($xml->created_at)), );
+                        $thisFeed[] = $this->parseUser($xml);
                         break;
                     case 'ids':
-                        foreach ($xml->children() as $item) {
-                            $thisFeed[] = array('id'=>$item);
-                        }
+                        $thisFeed = $this->parseIdList($xml->children();
                         break;
                     case 'id_list':
                         $this->next_cursor = $xml->next_cursor;
-                        foreach ($xml->ids->children() as $item) {
-                            $thisFeed[] = array('id'=>$item);
-                        }
+                        $thisFeed = $this->parseIdList($xml->ids->children());
                         break;
                     case 'status':
-                        $thisFeed[] = array('post_id'=>$xml->id, 'user_id'=>$xml->user->id, 'user_name'=>$xml->user->screen_name, 'full_name'=>$xml->user->name, 'avatar'=>$xml->user->profile_image_url, 'location'=>$xml->user->location, 'description'=>$xml->user->description, 'url'=>$xml->user->url, 'is_protected'=>$xml->user->protected , 'followers'=>$xml->user->followers_count, 'following'=>$xml->user->friends_count, 'tweets'=>$xml->user->statuses_count, 'joined'=>gmdate("Y-m-d H:i:s", strToTime($xml->user->created_at)), 'post_text'=>$xml->text, 'pub_date'=>gmdate("Y-m-d H:i:s", strToTime($xml->created_at)), 'in_reply_to_post_id'=>$xml->in_reply_to_status_id, 'in_reply_to_user_id'=>$xml->in_reply_to_user_id, 'source'=>$xml->source);
+                        $thisFeed[] = $this->parseStatus($xml);
                         break;
                     case 'users_list':
                         $this->next_cursor = $xml->next_cursor;
-                        foreach ($xml->users->children() as $item) {
-                            $thisFeed[] = array('post_id'=>$item->status->id, 'user_id'=>$item->id, 'user_name'=>$item->screen_name, 'full_name'=>$item->name, 'avatar'=>$item->profile_image_url, 'location'=>$item->location, 'description'=>$item->description, 'url'=>$item->url, 'is_protected'=>$item->protected , 'friend_count'=>$item->friends_count, 'follower_count'=>$item->followers_count, 'joined'=>gmdate("Y-m-d H:i:s", strToTime($item->created_at)), 'post_text'=>$item->status->text, 'last_post'=>gmdate("Y-m-d H:i:s", strToTime($item->status->created_at)), 'pub_date'=>gmdate("Y-m-d H:i:s", strToTime($item->status->created_at)), 'favorites_count'=>$item->favourites_count, 'post_count'=>$item->statuses_count);
-                        }
+                        $thisFeed = $this->parseUsersList($xml->users->children());
                         break;
                     case 'users':
-                        foreach ($xml->children() as $item) {
-                            $thisFeed[] = array('post_id'=>$item->status->id, 'user_id'=>$item->id, 'user_name'=>$item->screen_name, 'full_name'=>$item->name, 'avatar'=>$item->profile_image_url, 'location'=>$item->location, 'description'=>$item->description, 'url'=>$item->url, 'is_protected'=>$item->protected , 'friend_count'=>$item->friends_count, 'follower_count'=>$item->followers_count, 'joined'=>gmdate("Y-m-d H:i:s", strToTime($item->created_at)), 'post_text'=>$item->status->text, 'last_post'=>gmdate("Y-m-d H:i:s", strToTime($item->status->created_at)), 'pub_date'=>gmdate("Y-m-d H:i:s", strToTime($item->status->created_at)), 'favorites_count'=>$item->favourites_count, 'post_count'=>$item->statuses_count);
-                        }
+                        $thisFeed = $this->parseUsersList($xml->children());
                         break;
                     case 'statuses':
-                        foreach ($xml->children() as $item) {
-                            $thisFeed[] = array('post_id'=>$item->id, 'user_id'=>$item->user->id, 'user_name'=>$item->user->screen_name, 'full_name'=>$item->user->name, 'avatar'=>$item->user->profile_image_url, 'location'=>$item->user->location, 'description'=>$item->user->description, 'url'=>$item->user->url, 'is_protected'=>$item->user->protected , 'follower_count'=>$item->user->followers_count, 'friend_count'=>$item->user->friends_count, 'post_count'=>$item->user->statuses_count, 'joined'=>gmdate("Y-m-d H:i:s", strToTime($item->user->created_at)), 'post_text'=>$item->text, 'pub_date'=>gmdate("Y-m-d H:i:s", strToTime($item->created_at)), 'favorites_count'=>$item->user->favourites_count, 'in_reply_to_post_id'=>$item->in_reply_to_status_id, 'in_reply_to_user_id'=>$item->in_reply_to_user_id, 'source'=>$item->source);
-                        }
+                        $thisFeed = $this->parseStatuses($xml->children());
                         break;
                     case 'hash':
-                        $thisFeed = array('remaining-hits'=>$xml-> {'remaining-hits'} , 'hourly-limit'=>$xml-> {'hourly-limit'} , 'reset-time'=>$xml-> {'reset-time-in-seconds'} );
+                        $thisFeed = $this->parseHash($xml);
                         break;
                     case 'relationship':
-                        $thisFeed = array('source_follows_target'=>$xml->source->following, 'target_follows_source'=>$xml->target->following);
+                        $thisFeed = $this->parseRelationship($xml);
                         break;
                     case 'lists_list':
                         $thisFeed = $this->parseLists($xml->lists->children());
                         break;
                     default:
                         break;
-                }
-                
+                }                
             }
         }
         catch(Exception $e) {
@@ -232,19 +223,138 @@ class TwitterAPIAccessorOAuth {
         return $xml;
     }
     
-    private function parseLists($lists) {
+    private function parseUser(&$xml) {
+        return array(
+            'user_id'       => $xml->id,
+            'user_name'     => $xml->screen_name,
+            'full_name'     => $xml->name,
+            'avatar'        => $xml->profile_image_url,
+            'location'      => $xml->location,
+            'description'   => $xml->description,
+            'url'           => $xml->url,
+            'is_protected'  => $xml->protected,
+            'follower_count'    => $xml->followers_count,
+            'friend_count'  => $xml->friends_count,
+            'post_count'    => $xml->statuses_count,
+            'favorites_count'   => $xml->favourites_count,
+            'joined'        => gmdate(self::DateFormat, strToTime($xml->created_at))
+        );
+    }
+    
+    private function parseIdList(&$xml) {
+        $id_list_parsed = array();
+        foreach ($xml as $id) {
+            $id_list_parsed[] = array('id' => $id);
+        }
+        
+        return $id_list_parsed;
+    }
+
+    private function parseStatus(&$xml) {
+        return array(
+            'post_id'       => $xml->id,
+            'user_id'       => $xml->user->id,
+            'user_name'     => $xml->user->screen_name,
+            'full_name'     => $xml->user->name,
+            'avatar'        => $xml->user->profile_image_url,
+            'location'      => $xml->user->location,
+            'description'   => $xml->user->description,
+            'url'           => $xml->user->url,
+            'is_protected'  => $xml->user->protected ,
+            'followers'     => $xml->user->followers_count,
+            'following'     => $xml->user->friends_count,
+            'tweets'        => $xml->user->statuses_count,
+            'joined'        => gmdate(self::DateFormat, strToTime($xml->user->created_at)),
+            'post_text'     => $xml->text,
+            'pub_date'      => gmdate(self::DateFormat, strToTime($xml->created_at)),
+            'in_reply_to_post_id'   => $xml->in_reply_to_status_id,
+            'in_reply_to_user_id'   => $xml->in_reply_to_user_id,
+            'source'        => $xml->source
+        );
+    }
+    
+    private function parseUsersList(&$xml) {
+        $users_list_parsed = array();
+        foreach ($xml as $user) {
+            $users_list_parsed[] = array(
+                'post_id'       => $user->status->id,
+                'user_id'       => $user->id,
+                'user_name'     => $user->screen_name,
+                'full_name'     => $user->name,
+                'avatar'        => $user->profile_image_url,
+                'location'      => $user->location,
+                'description'   => $user->description,
+                'url'           => $user->url,
+                'is_protected'  => $user->protected,
+                'friend_count'  => $user->friends_count,
+                'follower_count'    => $user->followers_count,
+                'joined'        => gmdate(self::DateFormat, strToTime($user->created_at)),
+                'post_text'     => $user->status->text,
+                'last_post'     => gmdate(self::DateFormat, strToTime($user->status->created_at)),
+                'pub_date'      => gmdate(self::DateFormat, strToTime($user->status->created_at)),
+                'favorites_count'   => $user->favourites_count,
+                'post_count'    => $user->statuses_count
+            );
+        }
+        
+        return $users_list_parsed;
+    }
+    
+    private function parseStatuses(&$xml) {
+        $statuses_parsed = array();        
+        foreach ($xml as $status) {
+            $statuses_parsed = array('post_id'=> $status->id,
+            'user_id'       => $status->user->id,
+            'user_name'     => $status->user->screen_name,
+            'full_name'     => $status->user->name,
+            'avatar'        => $status->user->profile_image_url,
+            'location'      => $status->user->location,
+            'description'   => $status->user->description,
+            'url'           => $status->user->url,
+            'is_protected'  => $status->user->protected ,
+            'follower_count'    => $status->user->followers_count,
+            'friend_count'  => $status->user->friends_count,
+            'post_count'    => $status->user->statuses_count,
+            'joined'        => gmdate(self::DateFormat, strToTime($status->user->created_at)),
+            'post_text'     => $status->text,
+            'pub_date'      => gmdate(self::DateFormat, strToTime($status->created_at)),
+            'favorites_count'   => $status->user->favourites_count,
+            'in_reply_to_post_id'   => $status->in_reply_to_status_id,
+            'in_reply_to_user_id'   => $status->in_reply_to_user_id,
+            'source'        => $status->source);
+        }
+        
+        return $statuses_parsed;
+    }
+    
+    private function parseHash(&$xml) {
+        return array(
+            'remaining-hits'    => $xml->{'remaining-hits'},
+            'hourly-limit'      => $xml->{'hourly-limit'},
+            'reset-time'        => $xml->{'reset-time-in-seconds'}
+        );
+    }
+    
+    private function parseRelationship(&$xml) {
+        return array(
+            'source_follows_target' => $xml->source->following,
+            'target_follows_source' => $xml->target->following
+        );
+    }
+    
+    private function parseLists(&$xml) {
         $lists_parsed = array();
-        foreach ($lists as $list) {
-            $lists_parsed[] = array(
+        foreach ($xml as $list) {
+            $thisFeed[] = array(
                 'list_id'   => $list->id,
-                'name'      => $list->name,
+                'name' => $list->name,
                 'full_name' => $list->full_name,
-                'slug'      => $list->slug,
-                'description'       => $list->description,
+                'slug'  => $list->slug,
+                'description' => $list->description,
                 'subscriber_count'  => $list->subscriber_count,
-                'member_count'      => $list->member_count,
-                'uri'       => $list->uri,
-                'mode'      => $list->mode
+                'member_count'  => $list->member_count,
+                'uri'   => $list->uri,
+                'mode'  => $list->mode
             );
         }
         
@@ -354,9 +464,8 @@ class CrawlerTwitterAPIAccessorOAuth extends TwitterAPIAccessorOAuth {
         
     }
     
-    function getStatus() {
+    private function getStatus() {
         return $this->available_api_calls_for_twitter." of ".$this->api_hourly_limit." API calls left this hour; ".round($this->available_api_calls_for_crawler)." for crawler until ".date('H:i:s', (int) $this->next_api_reset);
-        
     }
 }
 ?>

@@ -1,5 +1,5 @@
 <?php
-class MemberList {
+class Group {
     var $id;
     var $name;
     var $full_name;
@@ -25,8 +25,8 @@ class MemberList {
     }
 }
 
-class MemberListDAO extends MySQLDAO {
-    const TableName = 'lists';
+class GroupDAO extends MySQLDAO {
+    const TableName = 'groups';
 
     function getList($list_id) {
         $query = '  SELECT t.*

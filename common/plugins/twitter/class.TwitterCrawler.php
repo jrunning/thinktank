@@ -737,7 +737,8 @@ class TwitterCrawler {
 		}
 	}
 
-    private function fetchLists($groupDAO) {
+    public function fetchLists() {
+        $groupDAO = new GroupDAO($this->db, $this->logger);
         $continue_fetching = true;        
         $lists_call = $this->api->cURL_source['lists'];
         $next_cursor = -1;
@@ -770,8 +771,8 @@ class TwitterCrawler {
                 
                 $status_message = '';
                 
-                if (count($ids) == 0) { $continue_fetching = false; }
-
+                if(count($lists) == 0) { $continue_fetching = false; }
+                echo var_dump($lists);
                 $updated_list_count = 0;
 
                 foreach($lists as $list) {

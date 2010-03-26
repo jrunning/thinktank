@@ -31,11 +31,11 @@ class GroupDAO extends MySQLDAO {
     function getList($list_id) {
         $query = '  SELECT t.*
                     FROM #prefix#' . self::TableName . ' t
-                    WHERE id=' . mysql_real_escape_string($list_id) . ';
+                    WHERE id = ' . mysql_real_escape_string($list_id) . ';
                 ';
         
         $sql_result = $this->executeSQL($query);
-        $list = new MemberList(mysql_fetch_assoc($sql_result));
+        $list = new Group(mysql_fetch_assoc($sql_result));
         mysql_free_result($sql_result); # Free up memory
 
         return $list;

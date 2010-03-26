@@ -8,7 +8,7 @@ class MySQLDAO {
         $this->db = $d;
     }
 
-    function executeSQL($q) {
+    public function executeSQL($q) {
         $r = null;
         try {
             $r = $this->db->exec($q);
@@ -20,6 +20,10 @@ class MySQLDAO {
             }
         }
         return $r;
+    }
+    
+    public static function EscapeParams($params) {
+        return array_map('mysql_real_escape_string', $params);
     }
 }
 ?>

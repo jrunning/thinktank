@@ -46,6 +46,8 @@ function twitter_crawl() {
             // TODO: Get direct messages
             // TODO: Gather favorites data
             
+            $crawler->fetchLists();
+            
             $crawler->cleanUpFollows();
             
             // Save instance

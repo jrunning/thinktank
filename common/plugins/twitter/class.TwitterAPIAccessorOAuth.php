@@ -168,7 +168,7 @@ class TwitterAPIAccessorOAuth {
                         $thisFeed[] = $this->parseUser($xml);
                         break;
                     case 'ids':
-                        $thisFeed = $this->parseIdList($xml->children();
+                        $thisFeed = $this->parseIdList($xml->children());
                         break;
                     case 'id_list':
                         $this->next_cursor = $xml->next_cursor;

@@ -23,6 +23,7 @@ require_once 'class.Utils.php';
 require_once 'class.Captcha.php';
 require_once 'class.Session.php';
 require_once 'class.Plugin.php';
+require_once 'class.Group.php';
 
 require_once 'OAuth.php';
 

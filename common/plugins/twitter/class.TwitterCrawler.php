@@ -737,16 +737,64 @@ class TwitterCrawler {
 		}
 	}
 
+    private function fetchLists($groupDAO) {
+        $continue_fetching = true;        
+        $lists_call = $this->api->cURL_source['lists'];
+        $next_cursor = -1;
+
+        while( $this->api->available && $this->api->available_api_calls_for_crawler > 0
+                && $continue_fetching
+        ) {            
+            $args = array();
+            
+            $args['cursor'] = strval($next_cursor);
+            
+            list($cURL_status, $twitter_data) = $this->api->apiRequest($lists_call, $this->logger, $args);
+            
+            if($cURL_status > 200) {
+                $continue_fetching = false;
+            } else {
+                try {
+                    $status_message  = 'Parsing XML. ';                    
+                    $lists = $this->api->parseXML($twitter_data);
+                } catch(Exception $e) {
+                    $status_message .= 'Could not parse XML. ';
+                }
+
+                $status_message .= 'Cursor ' . $next_cursor . ':';
+                
+                $next_cursor = $this->api->getNextCursor();
+                
+                $status_message .= count($lists) . ' lists queued to update. ';
+                $this->logger->logStatus($status_message, get_class($this));
+                
+                $status_message = '';
+                
+                if (count($ids) == 0) { $continue_fetching = false; }
+
+                $updated_list_count = 0;
+
+                foreach($lists as $list) {
+                    $updated_list_count += $groupDAO->updateGroup($list);
+                }
+
+                $status_message .= $updated_list_count . ' lists updated or inserted.';
+            }
+
+			$this->logger->logStatus($status_message, get_class($this));
+        }
+    }
+
 	private function fetchUserFriendsByIDs($uid, $fd) {
 		$continue_fetching = true;
 		$status_message = "";
 
-		while ($this->api->available && $this->api->available_api_calls_for_crawler > 0 && $continue_fetching) {
+		while ($this->api->available && $this->api->available_api_calls_for_crawler > 0&& $continue_fetching) {
 
 			$args = array();
 			$friend_ids = $this->api->cURL_source['following_ids'];
 			if (!isset($next_cursor))
-			$next_cursor = -1;
+                $next_cursor = -1;
 			$args['cursor'] = strval($next_cursor);
 
 			list($cURL_status, $twitter_data) = $this->api->apiRequest($friend_ids, $this->logger, $args);
@@ -767,7 +815,7 @@ class TwitterCrawler {
 
 
 					if (count($ids) == 0)
-					$continue_fetching = false;
+                        $continue_fetching = false;
 
 					$updated_follow_count = 0;
 					$inserted_follow_count = 0;
@@ -777,11 +825,11 @@ class TwitterCrawler {
 						if ($fd->followExists($id['id'], $uid)) {
 							//update it
 							if ($fd->update($id['id'], $uid))
-							$updated_follow_count++;
+                                $updated_follow_count++;
 						} else {
 							//insert it
 							if ($fd->insert($id['id'], $uid))
-							$inserted_follow_count++;
+                                $inserted_follow_count++;
 						}
 					}
 

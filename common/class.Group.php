@@ -49,7 +49,7 @@ class GroupDAO extends MySQLDAO {
                 
         $result = $this->executeSQL($query);
         
-        return mysql_num_rows($sql_result) > 0);
+        return mysql_num_rows($sql_result) > 0;
     }
     
     public function updateGroup($row) {
@@ -69,7 +69,7 @@ class GroupDAO extends MySQLDAO {
                 uri = %8$s,                 mode = %9$s;
         ';
         
-        $this->executeSQL(vsprintf($query, self::EscapeParams($row));
+        $this->executeSQL(vsprintf($query, self::EscapeParams($row)));
 
         if (mysql_affected_rows() > 0) {
             if(isset($this->logger) && $this->logger != null) {

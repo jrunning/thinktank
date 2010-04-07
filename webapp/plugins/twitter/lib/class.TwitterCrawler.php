@@ -77,11 +77,11 @@ class TwitterCrawler {
                 try {
                     $count = 0;
                     $tweets = $this->api->parseXML($twitter_data);
-                    
+
                     $pd = new PostDAO($this->db, $this->logger);
+
                     foreach ($tweets as $tweet) {
                         $tweet['network'] = 'twitter';
-                        
                         if ($pd->addPost($tweet, $this->owner_object, $this->logger) > 0) {
                             $count = $count + 1;
                             $this->instance->total_posts_in_system = $this->instance->total_posts_in_system + 1;
@@ -867,6 +867,53 @@ class TwitterCrawler {
                 $continue_fetching = false;
             }
         }
+    }
+    
+    function fetchInstanceUserLists() {
+        $gd = new GroupDAO($this->db, $this->logger);
+        
+        $status_message = "";
+        # Fetch list pages
+        $continue_fetching = true;
+        while ($this->api->available && $this->api->available_api_calls_for_crawler > 0
+                && $continue_fetching) {
+            $list_ids = str_replace("[id]", $this->instance->network_username, $this->api->cURL_source['lists']);
+
+            $args = array();
+            if (!isset($next_cursor))
+                $next_cursor = -1;
+            $args['cursor'] = strval($next_cursor);
+            
+            list($cURL_status, $twitter_data) = $this->api->apiRequest($list_ids, $this->logger, $args);
+            
+            if ($cURL_status > 200) {
+                $continue_fetching = false;
+            } else {
+            
+                try {
+                    $status_message = "Parsing XML. ";
+                    $status_message .= "Cursor ".$next_cursor.":";
+                    $lists = $this->api->parseXML($twitter_data);
+                    $next_cursor = $this->api->getNextCursor();
+                    $status_message .= count($lists)." lists queued to update. ";
+                    $this->logger->logStatus($status_message, get_class($this));
+                    $status_message = "";
+                    
+                    foreach ($lists as $list) {
+                        $group_obj = new Group($list);
+                        $gd->updateGroup($group_obj);                        
+                    }
+                }
+                catch(Exception $e) {
+                    $status_message = 'Could not parse lists XML';
+                }
+                $this->logger->logStatus($status_message, get_class($this));
+                $status_message = "";               
+            }
+            
+            $this->logger->logStatus($status_message, get_class($this));
+            $status_message = "";            
+        }        
     }
 }
 ?>

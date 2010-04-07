@@ -54,7 +54,7 @@ class TwitterAPIAccessorOAuth {
         "user_timeline"     => "/statuses/user_timeline/[id]",
         "show_user"         => "/users/show/[id]",
         "retweeted_by_me"   => "/statuses/retweeted_by_me",
-        "lists"             => "/lists"
+        "lists"             => "/[id]/lists"
     );
     
     const DateFormat = "Y-m-d H:i:s";
@@ -185,7 +185,7 @@ class TwitterAPIAccessorOAuth {
                         $thisFeed = $this->parseUsersList($xml->children());
                         break;
                     case 'statuses':
-                        $thisFeed = $this->parseStatuses($xml->children());
+                        $thisFeed = $this->parseStatuses($xml);
                         break;
                     case 'hash':
                         $thisFeed = $this->parseHash($xml);
@@ -303,7 +303,7 @@ class TwitterAPIAccessorOAuth {
     private function parseStatuses(&$xml) {
         $statuses_parsed = array();        
         foreach ($xml as $status) {
-            $statuses_parsed = array('post_id'=> $status->id,
+            $statuses_parsed[] = array('post_id'=> $status->id,
             'user_id'       => $status->user->id,
             'user_name'     => $status->user->screen_name,
             'full_name'     => $status->user->name,

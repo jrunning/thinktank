@@ -30,9 +30,9 @@ function twitter_crawl() {
         if ($api->available_api_calls_for_crawler > 0) {
         
             $id->updateLastRun($i->id);
-            
+
             $crawler->fetchInstanceUserInfo();
-            
+
             $crawler->fetchInstanceUserTweets();
             
             $crawler->fetchInstanceUserRetweetsByMe();
@@ -49,10 +49,10 @@ function twitter_crawl() {
             
             $crawler->fetchFriendTweetsAndFriends();
             
+            $crawler->fetchInstanceUserLists();
+            
             // TODO: Get direct messages
             // TODO: Gather favorites data
-            
-            $crawler->fetchLists();
             
             $crawler->cleanUpFollows();
             

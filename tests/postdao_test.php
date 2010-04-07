@@ -3,11 +3,11 @@ require_once (dirname(__FILE__).'/simpletest/autorun.php');
 require_once (dirname(__FILE__).'/simpletest/web_tester.php');
 
 require_once (dirname(__FILE__).'/config.tests.inc.php');
-ini_set("include_path", ini_get("include_path").PATH_SEPARATOR.$INCLUDE_PATH);
+
 
 require_once ("classes/class.ThinkTankTestCase.php");
-require_once ("class.Post.php");
-require_once ("class.Link.php");
+require_once ("common/class.Post.php");
+require_once ("common/class.Link.php");
 
 class TestOfPostDAO extends ThinkTankUnitTestCase {
     function TestOfPostDAO() {
@@ -264,6 +264,45 @@ class TestOfPostDAO extends ThinkTankUnitTestCase {
         
         $this->assertTrue($totals["total_posts"] == 40);
         $this->assertTrue($totals["total_pages"] == 3);
+    }
+    
+    function testGetTotalPostsByUser() {
+        $pdao = new PostDAO($this->db, $this->logger);
+        $total_posts = $pdao->getTotalPostsByUser(13);
+        $this->assertTrue($total_posts == 40);
+    }
+    
+    function testAssignParent() {
+        //Add two "parent" posts
+        $q = "INSERT INTO tt_posts (post_id, author_user_id, author_username, author_fullname, author_avatar, post_text, source, pub_date, mention_count_cache, retweet_count_cache) VALUES (550, 19, 'linkbaiter', 'Link Baiter', 'avatar.jpg', 'This is parent post 1', 'web', '2006-03-01 00:01:00', 1, 0);";
+        $this->db->exec($q);
+        $q = "INSERT INTO tt_posts (post_id, author_user_id, author_username, author_fullname, author_avatar, post_text, source, pub_date, mention_count_cache, retweet_count_cache) VALUES (551, 19, 'linkbaiter', 'Link Baiter', 'avatar.jpg', 'This is parent post 2', 'web', '2006-03-01 00:01:00', 0, 0);";
+        $this->db->exec($q);
+        
+        //Add a post with the parent post 550
+        $q = "INSERT INTO tt_posts (post_id, author_user_id, author_username, author_fullname, author_avatar, post_text, source, pub_date, mention_count_cache, retweet_count_cache, in_reply_to_post_id) VALUES (552, 19, 'linkbaiter', 'Link Baiter', 'avatar.jpg', 'This is a reply with the wrong parent', 'web', '2006-03-01 00:01:00', 0, 0, 550);";
+        $this->db->exec($q);
+        
+        $pdao = new PostDAO($this->db, $this->logger);
+        
+        $post = $pdao->getPost(552);
+        //Assert parent post is 550
+        $this->assertEqual($post->in_reply_to_post_id, 550);
+        
+        //Change parent post to 551
+        $pdao->assignParent(551, 552);
+        $child_post = $pdao->getPost(552);
+		//Assert parent post is now 551
+        $this->assertEqual($child_post->in_reply_to_post_id, 551);
+        
+		//Assert old parent post has one fewer reply total
+        $old_parent = $pdao->getPost(550);
+        $this->assertEqual($old_parent->mention_count_cache, 0);
+        
+		//Assert new parent post has one more reply total
+        $new_parent = $pdao->getPost(551);
+        $this->assertEqual($new_parent->mention_count_cache, 1);
+        
     }
 }
 ?>

@@ -5,10 +5,7 @@ session_start();
 
 //Print_r  ($_i);
 
-// set up
-require_once ('config.webapp.inc.php');
-ini_set("include_path", ini_get("include_path").PATH_SEPARATOR.$INCLUDE_PATH);
-require_once ("init.php");
+require_once ("common/init.php");
 
 $db = new Database($THINKTANK_CFG);
 $conn = $db->getConnection();
@@ -81,7 +78,7 @@ if (isset($_REQUEST['t']) && $pd->isPostByPublicInstance($_REQUEST['t'])) {
                 $s->assign('posts', $pd->getMostRetweetedPostsByPublicInstances($page, $count));
                 $s->assign('site_root', $THINKTANK_CFG['site_root_path']);
             }
-            $s->assign('header', 'Most retweeted');
+            $s->assign('header', 'Most forwarded');
             $s->assign('description', 'Posts that have been forwarded most often');
             $s->display('public.tpl', 'mostretweets-'.$i->network_username."-".$_u."-".$page);
             break;

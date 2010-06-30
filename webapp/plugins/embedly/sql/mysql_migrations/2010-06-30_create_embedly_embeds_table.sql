@@ -1,0 +1,20 @@
+CREATE TABLE `tt_embedly_embeds` (
+ `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+ `link_id` int(10) unsigned NOT NULL,
+ `type` varchar(15) COLLATE utf8_bin NOT NULL,
+ `title` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+ `author_name` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+ `author_url` text COLLATE utf8_bin,
+ `provider_name` varchar(255) COLLATE utf8_bin DEFAULT NULL,
+ `provider_url` text COLLATE utf8_bin,
+ `cache_age` int(10) unsigned DEFAULT NULL,
+ `thumbnail_url` text COLLATE utf8_bin,
+ `thumbnail_width` smallint(5) unsigned DEFAULT NULL,
+ `thumbnail_height` smallint(5) unsigned DEFAULT NULL,
+ `url` text COLLATE utf8_bin,
+ `width` mediumint(8) unsigned DEFAULT NULL,
+ `height` mediumint(8) unsigned DEFAULT NULL,
+ `html` text COLLATE utf8_bin,
+ PRIMARY KEY (`id`),
+ UNIQUE KEY `link_id` (`link_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin

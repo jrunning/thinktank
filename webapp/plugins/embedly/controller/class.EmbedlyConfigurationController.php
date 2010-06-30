@@ -4,7 +4,7 @@
  * @author Jordan Running <jordan[at]jordanrunning[dot]com>
  *
  */
-class EmbedlyConfigurationController extends ThinkTankAuthController {
+class EmbedlyPluginConfigurationController extends ThinkTankAuthController {
     /**
      *
      * @var Owner

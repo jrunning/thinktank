@@ -14,4 +14,4 @@ $webapp = Webapp::getInstance();
 $webapp->registerPlugin('twitter', 'TwitterPlugin');
 
 $crawler = Crawler::getInstance();
-$crawler->registerCrawlerPlugin('TwitterPlugin');
+//$crawler->registerCrawlerPlugin('TwitterPlugin');

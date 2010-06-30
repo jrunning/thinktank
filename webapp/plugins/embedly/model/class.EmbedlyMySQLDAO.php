@@ -19,6 +19,7 @@ class EmbedlyMySQLDAO extends PDODAO implements EmbedlyDAO {
         $q .= "     WHERE em.link_id = l.id ";
         $q .= " )" ;
         $q .= " GROUP BY l.url ";
+        $q .= " LIMIT :limit ";
  
         $vars = array( ':limit' => $limit );
         $result = $this->execute($q, $vars);

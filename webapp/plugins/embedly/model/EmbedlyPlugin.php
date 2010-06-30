@@ -39,7 +39,7 @@ class EmbedlyPlugin implements CrawlerPlugin {
             }
         }
 
-        $logger->logStatus("URL expansion complete for this run", self::PluginName);
+        $logger->logStatus("Embed.ly API calls complete for this run", self::PluginName);
         $logger->close(); # Close logging
     }
 

@@ -19,8 +19,7 @@ class EmbedlyDAOFactory extends DAOFactory {
 
     /**
      * maps DAO from db_type and defines class names and path for initialization
-     */
-     
+     */     
     public static function getDAO($dao_key) {
         self::$dao_mapping['EmbedlyDAO'] = array(
             'mysql' => array(
@@ -31,15 +30,4 @@ class EmbedlyDAOFactory extends DAOFactory {
         
         return parent::getDAO($dao_key);
     }
-    /*
-    static $dao_mapping = array (
-        'EmbedlyLinkDAO' => array(
-            //MySQL Version
-            'mysql' => array(
-                'class' => 'EmbedlyLinkMySQLDAO',
-                'path'  => 'class.EmbedlyLinkMySQLDAO.php'
-            )
-        )
-    );
-    */
 }

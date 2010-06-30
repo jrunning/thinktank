@@ -22,10 +22,10 @@ class EmbedlyDAOFactory extends DAOFactory {
      */
      
     public static function getDAO($dao_key) {
-        self::$dao_mapping['EmbedlyLinkDAO'] = array(
+        self::$dao_mapping['EmbedlyDAO'] = array(
             'mysql' => array(
-                'class' => 'EmbedlyLinkMySQLDAO',
-                'path'  => 'plugins/embedly/model/class.EmbedlyLinkMySQLDAO.php'
+                'class' => 'EmbedlyMySQLDAO',
+                'path'  => 'plugins/embedly/model/class.EmbedlyMySQLDAO.php'
             )
         );
         

@@ -11,13 +11,16 @@ class EmbedlyMySQLDAO extends PDODAO implements EmbedlyDAO {
     const TableName = 'embedly_embeds';
 
     public function getLinksToEmbed($limit = 200) {
-        $q  = " SELECT l.url AS url ";
+        $q  = " SELECT l.id, l.expanded_url AS url ";
         $q .= " FROM #prefix#links AS l ";
-        $q .= " WHERE NOT EXISTS (";
-        $q .= "     SELECT * ";
-        $q .= "     FROM #prefix#" . self::TableName . " AS em ";
-        $q .= "     WHERE em.link_id = l.id ";
-        $q .= " )" ;
+        $q .= " WHERE l.expanded_url IS NOT NULL ";
+        $q .= "     AND l.expanded_url <> '' ";
+        $q .= "     AND COALESCE(embedly_checked_at, 0) = 0";
+        $q .= "     AND NOT EXISTS (";
+        $q .= "         SELECT * ";
+        $q .= "         FROM #prefix#" . self::TableName . " AS em ";
+        $q .= "         WHERE em.link_id = l.id ";
+        $q .= "     )" ;
         $q .= " GROUP BY l.url ";
         $q .= " LIMIT :limit ";
  
@@ -26,10 +29,8 @@ class EmbedlyMySQLDAO extends PDODAO implements EmbedlyDAO {
 
         $rows = $this->getDataRowsAsArrays($result);
         $urls = array();
-        foreach($rows as $row){
-            $urls[] = $row['url'];
-        }
-        return $urls;
+        
+        return $rows;
     }
     
     public function insert($link_id, Services_oEmbed_Object_Common $obj) {
@@ -63,5 +64,19 @@ class EmbedlyMySQLDAO extends PDODAO implements EmbedlyDAO {
         
         $result = $this->execute($q, $vars);
         return $this->getInsertId($result);
+    }
+    
+    public function setLinkEmbedlyCheckedAt($link_id, $datetime = 'NOW()') {
+        $q  = " UPDATE #prefix#links ";
+        $q .= " SET embedly_checked_at = :embedly_checked_at ";
+        $q .= " WHERE id = :link_id ";
+        
+        $vars = array(
+            'embedly_checked_at'    => $datetime,
+            'link_id'               => $link_id
+        );
+        
+        $result = $this->execute($q, $vars);
+        return $this->getUpdateCount($result);
     }
 }

@@ -12,7 +12,7 @@ class EmbedlyPlugin implements CrawlerPlugin {
 
     const PluginName    = 'Embed.ly Plugin';
     const OEmbedFormat  = 'object';
-    const NumToEmbed    = 10000;
+    const NumToEmbed    = 500;
     const OEmbedEndpoint    = 'http://api.embed.ly/v1/api/oembed';
     const ServicesEndpoint  = 'http://api.embed.ly/v1/api/services/php';
     const CheckServicesFirst = true;

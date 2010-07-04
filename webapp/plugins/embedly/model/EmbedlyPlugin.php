@@ -25,33 +25,13 @@ class EmbedlyPlugin implements CrawlerPlugin {
         $links_to_embed = $ldao->getLinksToEmbed(self::NumToEmbed);
         $logger->logStatus(count($links_to_embed) . " links for Embed.ly", self::PluginName);
 
-        if(self::CheckServicesFirst) {
-            $services = self::getServices();
-        }
+        $services = self::CheckServicesFirst ? self::getServices() : array();
 
         foreach ($links_to_embed as $link) {
             try {
                 $logger->logStatus("Trying $link[url]", self::PluginName);
                 
-                if(!self::CheckServicesFirst || $match = self::getUrlMatch($link['url'], $services)) {
-                    if(self::CheckServicesFirst) {
-                        $logger->logStatus($match . " matched " . $link['url'], self::PluginName);
-                    }
-                    
-                    $logger->logStatus("Asking Embed.ly about $link[url]", self::PluginName);
-                
-                    $oEmbed = new Services_oEmbed($link['url'], array(
-                        Services_oEmbed::OPTION_API => self::OEmbedEndpoint
-                    ));
-
-                    $object = $oEmbed->getObject();
-                    if($ldao->insert($link['id'], $object)) {
-                        $logger->logStatus("Inserted embed data for $link[url]", self::PluginName);
-                    }
-                } else {
-                    $logger->logStatus("No URL match for $link[url]", self::PluginName);
-                }
-                
+                self::checkLink($link, $services, $logger); 
                 self::updateLinkEmbedlyCheckedAt($link['id'], $ldao);
             } catch (Services_oEmbed_Exception $ex) {
                 $logger->logStatus($ex->getMessage(), self::PluginName);
@@ -70,6 +50,27 @@ class EmbedlyPlugin implements CrawlerPlugin {
     protected function getServices() {
         $services_resp = file_get_contents(self::ServicesEndpoint);
         return json_decode($services_resp);
+    }
+    
+    protected function checkLink($link, &$services, $logger) {
+        if(!self::CheckServicesFirst || $match = self::getUrlMatch($link['url'], $services)) {
+            if(self::CheckServicesFirst) {
+                $logger->logStatus($match . " matched " . $link['url'], self::PluginName);
+            }
+            
+            $logger->logStatus("Asking Embed.ly about $link[url]", self::PluginName);
+        
+            $oEmbed = new Services_oEmbed($link['url'], array(
+                Services_oEmbed::OPTION_API => self::OEmbedEndpoint
+            ));
+
+            $object = $oEmbed->getObject();
+            if($ldao->insert($link['id'], $object)) {
+                $logger->logStatus("Inserted embed data for $link[url]", self::PluginName);
+            }
+        } else {
+            $logger->logStatus("No URL match for $link[url]", self::PluginName);
+        }
     }
     
     protected function getUrlMatch($url, &$services) {

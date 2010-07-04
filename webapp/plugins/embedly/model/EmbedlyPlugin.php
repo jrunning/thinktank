@@ -31,10 +31,10 @@ class EmbedlyPlugin implements CrawlerPlugin {
             try {
                 $logger->logStatus("Trying $link[url]", self::PluginName);
                 
-                self::checkLink($link, $services, $logger); 
+                self::checkLink($link, $services, $ldao, $logger); 
                 self::updateLinkEmbedlyCheckedAt($link['id'], $ldao);
             } catch (Services_oEmbed_Exception $ex) {
-                $logger->logStatus($ex->getMessage(), self::PluginName);
+                $logger->logStatus("    Error: " . $ex->getMessage(), self::PluginName); 
             }
         }
 
@@ -52,13 +52,13 @@ class EmbedlyPlugin implements CrawlerPlugin {
         return json_decode($services_resp);
     }
     
-    protected function checkLink($link, &$services, $logger) {
+    protected function checkLink($link, &$services, $ldao, $logger) {
         if(!self::CheckServicesFirst || $match = self::getUrlMatch($link['url'], $services)) {
             if(self::CheckServicesFirst) {
-                $logger->logStatus($match . " matched " . $link['url'], self::PluginName);
+                $logger->logStatus("    $match matched $link[url]", self::PluginName);
             }
             
-            $logger->logStatus("Asking Embed.ly about $link[url]", self::PluginName);
+            $logger->logStatus("    Asking Embed.ly OEmbed about $link[url]", self::PluginName);
         
             $oEmbed = new Services_oEmbed($link['url'], array(
                 Services_oEmbed::OPTION_API => self::OEmbedEndpoint
@@ -66,10 +66,10 @@ class EmbedlyPlugin implements CrawlerPlugin {
 
             $object = $oEmbed->getObject();
             if($ldao->insert($link['id'], $object)) {
-                $logger->logStatus("Inserted embed data for $link[url]", self::PluginName);
+                $logger->logStatus("    Inserted embed data for $link[url]", self::PluginName);
             }
         } else {
-            $logger->logStatus("No URL match for $link[url]", self::PluginName);
+            $logger->logStatus("    No URL match for $link[url]", self::PluginName);
         }
     }
     

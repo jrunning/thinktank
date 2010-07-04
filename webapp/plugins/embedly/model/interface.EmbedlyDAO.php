@@ -23,4 +23,11 @@ interface EmbedlyDAO {
    * @return id of inserted record
    */
   public function insert($link_id, Services_oEmbed_Object_Common $obj);
+  
+  /**
+   * Sets the embedly_checked_at property for a link
+   * @param int $link_id
+   * @return Number of link objects updated
+   */
+  public function setLinkEmbedlyCheckedAt($link_id);
 }

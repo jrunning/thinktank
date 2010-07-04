@@ -66,16 +66,13 @@ class EmbedlyMySQLDAO extends PDODAO implements EmbedlyDAO {
         return $this->getInsertId($result);
     }
     
-    public function setLinkEmbedlyCheckedAt($link_id, $datetime = 'NOW()') {
+    public function setLinkEmbedlyCheckedAt($link_id) {
         $q  = " UPDATE #prefix#links ";
-        $q .= " SET embedly_checked_at = :embedly_checked_at ";
+        $q .= " SET embedly_checked_at = NOW() ";
         $q .= " WHERE id = :link_id ";
         
-        $vars = array(
-            'embedly_checked_at'    => $datetime,
-            'link_id'               => $link_id
-        );
-        
+        $vars = array('link_id' => $link_id);
+
         $result = $this->execute($q, $vars);
         return $this->getUpdateCount($result);
     }

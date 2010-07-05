@@ -2,7 +2,7 @@
 require_once 'class.EmbedlyExceptions.php';
 
 class EmbedlyClient {
-    const LoggerName        = 'Embedly';
+    const LoggerName        = 'Embed.ly Plugin';
     const OEmbedEndpoint    = 'http://api.embed.ly/v1/api/oembed';
     const ServicesEndpoint  = 'http://api.embed.ly/v1/api/services/php';
     const OEmbedFormat      = 'object';
@@ -13,6 +13,10 @@ class EmbedlyClient {
     private $logger;
 
     public function __construct(EmbedlyDAO $dao, $logger = null) {
+        ini_set('user_agent',
+            'Mozilla/5.0 (compatible; ThinkTank Embed.ly Plugin/0.1; +jordan[at]jordanrunning[dot]com)'
+        );
+    
         $this->logger   = $logger;
         $this->dao      = $dao;
         $this->loadServices();

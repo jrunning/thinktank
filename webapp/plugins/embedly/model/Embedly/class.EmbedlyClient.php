@@ -40,17 +40,15 @@ class EmbedlyClient {
             }
             
             $this->log("  - Asking Embed.ly OEmbed about $link[url]");
-        
-            /* $oEmbed = new Services_oEmbed($link['url'], array(
-                Services_oEmbed::OPTION_API => self::OEmbedEndpoint
-            ));
 
-            $object = $oEmbed->getObject();
-            
-            */
-            $oembed = $this->oEmbedRequest($link['url']);
-            if($this->dao->insert($link['id'], $oembed)) {
-                $this->log("  - Inserted embed data for $link[url]");
+            try {
+                $oembed = $this->oEmbedRequest($link['url']);
+                
+                if($this->dao->insert($link['id'], $oembed)) {
+                    $this->log("  - Inserted embed data for $link[url]");
+                }
+            } catch(EmbedlyHTTPErrorException $e) {
+                $this->log('  - Embed.ly returned HTTP error: ' . $e->getMessage());
             }
         } else {
             $this->log("  - No URL match for $link[url]");

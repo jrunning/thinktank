@@ -33,34 +33,25 @@ class EmbedlyMySQLDAO extends PDODAO implements EmbedlyDAO {
         return $rows;
     }
     
-    public function insert($link_id, Services_oEmbed_Object_Common $obj) {
-        $q  = " INSERT IGNORE INTO #prefix#" . self::TableName . " ";
-        $q .= " (   link_id, type, title, author_name, author_url, ";
-        $q .= "     provider_name, provider_url, cache_age, thumbnail_url, ";
-        $q .= "     thumbnail_width, thumbnail_height, url, width, height, ";
-        $q .= "     html )";
-        $q .= " VALUES (:link_id, :type, :title, :author_name, :author_url, ";
-        $q .= "         :provider_name, :provider_url, :cache_age, ";
-        $q .= "         :thumbnail_url, :thumbnail_width, :thumbnail_height, ";
-        $q .= "         :url, :width, :height, :html ) ";
-        
-        $vars = array(
-            'link_id'            => $link_id,
-            'type'               => $obj->type,
-            'title'              => $obj->title,
-            'author_name'        => $obj->author_name,
-            'author_url'         => $obj->author_url,
-            'provider_name'      => $obj->provider_name,
-            'provider_url'       => $obj->provider_url,
-            'cache_age'          => $obj->cache_age,
-            'thumbnail_url'      => $obj->thumbnail_url,
-            'thumbnail_width'    => $obj->thumbnail_width,
-            'thumbnail_height'   => $obj->thumbnail_height,
-            'url'                => $obj->url,
-            'width'              => $obj->url,
-            'height'             => $obj->height,
-            'html'               => $obj->html
+    public function insert($link_id, $oembed) {
+        $param_names =  array(
+            'type',             'author_name',      'provider_name',
+            'provider_url',     'cache_age',        'thumbnail_url',
+            'thumbnail_width',  'thumbnail_height', 'url',
+            'width',            'height',           'html'
         );
+        
+        $q  = ' INSERT IGNORE INTO #prefix#' . self::TableName . ' ';
+        $q .= ' (link_id, ' . implode(', ', $param_names) . ') ';
+        $q .= ' VALUES ';
+        $q .= ' (:link_id, :' . implode(', :', $param_names) . ' ) ';
+
+        $vars = array('link_id' => $link_id);
+        
+        foreach($param_names as $param_name) {
+            $vars[$param_name] = isset($oembed[$param_name]) ?
+                $oembed[$param_name] : null;
+        }
         
         $result = $this->execute($q, $vars);
         return $this->getInsertId($result);

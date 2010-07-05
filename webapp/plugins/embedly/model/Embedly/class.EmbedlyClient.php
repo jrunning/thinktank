@@ -19,18 +19,14 @@ class EmbedlyClient {
     }
     
     public function loadServices() {
-        $services_resp = file_get_contents(self::ServicesEndpoint);
-        
-        if($services_resp === false) {
-            // $http_response_header is a magic variable populated by file_get_contents()
-            // Get "200 OK" from "HTTP/1.1 200 OK"
-            $error_code = array_pop(explode(' ', $http_response_header, 2));
-            
-            throw new HTTPErrorException('loadServices(): ' . $error_code);
-        }
-        
-        $this->services = json_decode($services_resp);
+        $this->services = $this->jsonRequest(self::ServicesEndpoint);
         return count($this->services);
+    }
+    
+    public function oEmbedRequest($url) {
+        $req_url = self::OEmbedEndpoint . '?url=' . urlencode($url);
+        
+        $resp = $this->jsonRequest($req_url);
     }
     
     public function checkLink($link) {
@@ -41,12 +37,15 @@ class EmbedlyClient {
             
             $this->log("  - Asking Embed.ly OEmbed about $link[url]");
         
-            $oEmbed = new Services_oEmbed($link['url'], array(
+            /* $oEmbed = new Services_oEmbed($link['url'], array(
                 Services_oEmbed::OPTION_API => self::OEmbedEndpoint
             ));
 
             $object = $oEmbed->getObject();
-            if($edao->insert($link['id'], $object)) {
+            
+            */
+            $oembed = $this->oEmbedRequest($link['url']);
+            if($this->dao->insert($link['id'], $oembed)) {
                 $this->log("  - Inserted embed data for $link[url]");
             }
         } else {
@@ -67,7 +66,17 @@ class EmbedlyClient {
     }
     
     protected function jsonRequest($url) {
-        //
+        $response = file_get_contents($url);
+        
+        if($response === false) {
+            // $http_response_header is a magic variable populated by file_get_contents()
+            // Get "200 OK" from "HTTP/1.1 200 OK"
+            $error_code = array_pop(explode(' ', $http_response_header, 2));
+            
+            throw new HTTPErrorException($error_code);
+        }
+        
+        return json_decode($response);
     }
     
     protected function log($message) {

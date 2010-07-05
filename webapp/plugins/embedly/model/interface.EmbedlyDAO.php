@@ -22,7 +22,7 @@ interface EmbedlyDAO {
    * @param Services_oEmbed_Object_Common $obj
    * @return id of inserted record
    */
-  public function insert($link_id, Services_oEmbed_Object_Common $obj);
+  public function insert($link_id, $oembed);
   
   /**
    * Sets the embedly_checked_at property for a link

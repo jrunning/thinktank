@@ -1,12 +1,4 @@
 <?php
-if (!class_exists('Services_oEmbed')) {
-    $config = Config::getInstance();
-    set_include_path(   get_include_path() . PATH_SEPARATOR .
-                        $config->getValue('source_root_path') . 'extlib/pear'
-                    );
-    require_once 'Services/oEmbed.php';
-}
-
 require_once 'Embedly/class.EmbedlyClient.php';
 
 class EmbedlyPlugin implements CrawlerPlugin {

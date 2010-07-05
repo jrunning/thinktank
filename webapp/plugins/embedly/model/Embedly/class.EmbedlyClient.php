@@ -75,8 +75,4 @@ class EmbedlyClient {
             $this->logger->logStatus($message, self::LoggerName);
         }
     }
-    
-    protected function updateLinkCheckedAt($link_id) {
-        $this->dao->setLinkEmbedlyCheckedAt($link_id);     
-    }
 }

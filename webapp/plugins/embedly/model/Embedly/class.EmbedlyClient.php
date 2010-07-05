@@ -6,6 +6,8 @@ class EmbedlyClient {
     const OEmbedEndpoint    = 'http://api.embed.ly/v1/api/oembed';
     const ServicesEndpoint  = 'http://api.embed.ly/v1/api/services/php';
     const OEmbedFormat      = 'object';
+    const UserAgent         =
+        'Mozilla/5.0 (compatible; ThinkTank Embed.ly Plugin/0.1; +http://github.com/jrunning/thinktank/tree/embedly-plugin/webapp/plugins/embedly/)';
     
     private $services = array();
     private $check_services_first = true;
@@ -13,9 +15,7 @@ class EmbedlyClient {
     private $logger;
 
     public function __construct(EmbedlyDAO $dao, $logger = null) {
-        ini_set('user_agent',
-            'Mozilla/5.0 (compatible; ThinkTank Embed.ly Plugin/0.1; +jordan[at]jordanrunning[dot]com)'
-        );
+        ini_set('user_agent', self::UserAgent);
     
         $this->logger   = $logger;
         $this->dao      = $dao;

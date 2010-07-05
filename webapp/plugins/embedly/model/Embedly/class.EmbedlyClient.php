@@ -71,9 +71,9 @@ class EmbedlyClient {
         if($response === false) {
             // $http_response_header is a magic variable populated by file_get_contents()
             // Get "200 OK" from "HTTP/1.1 200 OK"
-            $error_code = array_pop(explode(' ', $http_response_header, 2));
+            $error_code = array_pop(explode(' ', $http_response_header[0], 2));
             
-            throw new HTTPErrorException($error_code);
+            throw new EmbedlyHTTPErrorException($error_code);
         }
         
         return json_decode($response);

@@ -44,6 +44,8 @@ class EmbedlyClient {
             try {
                 $oembed = $this->oEmbedRequest($link['url']);
                 
+                # TODO:  Return this instead of inserting--this should happen in ../EmbedlyPlugin.php;
+                #        EmbedlyClient shouldn't do database access.
                 if($this->dao->insert($link['id'], $oembed)) {
                     $this->log("  - Inserted embed data for $link[url]");
                 }

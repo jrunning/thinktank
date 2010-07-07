@@ -19,7 +19,7 @@ class EmbedlyPlugin implements CrawlerPlugin {
         $logger->logStatus(count($links_to_embed) . " links for Embed.ly", self::PluginName);
 
         foreach ($links_to_embed as $link) {
-            $logger->logStatus("Trying $link[url]", self::PluginName);
+            $logger->logStatus("Trying $link[url] (link_id $link[id])", self::PluginName);
             
             if(!self::$check_services_first || $service_match = $embedly->getServicesMatch($link['url'])) {
                 if(self::$check_services_first) {
@@ -32,8 +32,8 @@ class EmbedlyPlugin implements CrawlerPlugin {
 
                 try {
                     if($oembed = $embedly->getOEmbedForURL($link['url'])) {                
-                        if($edao->insert($link['id'], $oembed)) {
-                            $logger->logStatus("  - Inserted OEmbed data for $link[url]", self::PluginName);
+                        if($insert_id = $edao->insert($link['id'], $oembed)) {
+                            $logger->logStatus("  - Inserted OEmbed data for $link[url]; embedly_embed_id $insert_id", self::PluginName);
                         } else {
                             $logger->logStatus("  - Error inserting OEmbed data for $link[url]", self::PluginName);
                         }

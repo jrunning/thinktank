@@ -12,7 +12,6 @@ class EmbedlyClient {
     private $services = array();
 
     public function __construct() {
-        ini_set('user_agent', self::UserAgent);
         $this->loadServices();
     }
     
@@ -44,16 +43,21 @@ class EmbedlyClient {
     }
     
     protected function jsonRequest($url) {
-        $response = file_get_contents($url);
+        $req = curl_init($url);
+        
+        curl_setopt($req, CURLOPT_USERAGENT, self::UserAgent);
+        // return the response as a string
+        curl_setopt($req, CURLOPT_RETURNTRANSFER, 1); 
+        
+        $response = curl_exec($req);
         
         if($response === false) {
-            // $http_response_header is a magic variable populated by file_get_contents()
-            // Get "200 OK" from "HTTP/1.1 200 OK"
-            $error_code = array_pop(explode(' ', $http_response_header[0], 2));
-            
+            $error_code = curl_getinfo($req, CURLINFO_HTTP_CODE);
             throw new EmbedlyHTTPErrorException($error_code);
         }
         
+        curl_close($req);
+               
         return json_decode($response);
     }
     

@@ -6,7 +6,7 @@ require_once $SOURCE_ROOT_PATH.'extlib/simpletest/web_tester.php';
 require_once $SOURCE_ROOT_PATH.'webapp/model/class.Config.php';
 
 require_once $SOURCE_ROOT_PATH.'tests/classes/class.ThinkTankUnitTestCase.php';
-// require_once $SOURCE_ROOT_PATH.'tests/classes/class.TestDAO.php';
+require_once $SOURCE_ROOT_PATH.'webapp/model/class.Profiler.php';
 require_once $SOURCE_ROOT_PATH.'webapp/model/class.DAOFactory.php';
 
 /**
@@ -160,7 +160,7 @@ class TestOfDAOFactory extends ThinkTankUnitTestCase {
         $this->assertTrue(isset($dao));
         $this->assertIsA($dao, 'OwnerMySQLDAO');
     }
-    
+
     /**
      * Test get LinkDAO
      */
@@ -173,9 +173,27 @@ class TestOfDAOFactory extends ThinkTankUnitTestCase {
     /**
      * Test get OwnerInstanceDAO
      */
-    function testDAOFactoryConfig() {
+    function testGetOwnerInstanceDAO() {
         $owner_instance_dao = DAOFactory::getDAO('OwnerInstanceDAO');
         $this->assertNotNull($owner_instance_dao);
         $this->assertIsA($owner_instance_dao, 'OwnerInstanceMySQLDAO');
-    }    
+    }
+
+    /**
+     * Test get PluginDAO
+     */
+    function testGetPluginDAO() {
+        $plugin_dao = DAOFactory::getDAO('PluginDAO');
+        $this->assertNotNull($plugin_dao);
+        $this->assertIsA($plugin_dao, 'PluginMySQLDAO');
+    }
+
+    /**
+     * Test get FollowerCountDAO
+     */
+    function testGetFollowerCountDAO() {
+        $plugin_dao = DAOFactory::getDAO('FollowerCountDAO');
+        $this->assertNotNull($plugin_dao);
+        $this->assertIsA($plugin_dao, 'FollowerCountMySQLDAO');
+    }
 }

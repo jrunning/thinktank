@@ -12,9 +12,8 @@ class EmbedlyPlugin implements CrawlerPlugin {
         $logger = Logger::getInstance();
         $edao   = EmbedlyDAOFactory::getDAO('EmbedlyDAO');
 
-        //TODO Set limit on total number of links to expand per crawler run in the plugin settings, now set here to 1500
         $links_to_embed = $edao->getLinksToEmbed(self::NumToEmbed);
-        $embedly = new EmbedlyClient($logger);
+        $embedly = new EmbedlyClient();
         
         $logger->logStatus(count($links_to_embed) . " links for Embed.ly", self::PluginName);
 

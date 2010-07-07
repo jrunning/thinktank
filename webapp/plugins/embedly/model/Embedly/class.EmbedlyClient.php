@@ -10,15 +10,9 @@ class EmbedlyClient {
         'Mozilla/5.0 (compatible; ThinkTank Embed.ly Plugin/0.1; +http://github.com/jrunning/thinktank/tree/embedly-plugin/webapp/plugins/embedly/)';
     
     private $services = array();
-    private $check_services_first = true;
-    private $dao;
-    private $logger;
 
-    public function __construct(EmbedlyDAO $dao, $logger = null) {
+    public function __construct() {
         ini_set('user_agent', self::UserAgent);
-    
-        $this->logger   = $logger;
-        $this->dao      = $dao;
         $this->loadServices();
     }
     
@@ -30,36 +24,18 @@ class EmbedlyClient {
     public function oEmbedRequest($url) {
         $req_url = self::OEmbedEndpoint . '?url=' . urlencode($url);
         
-        $resp = $this->jsonRequest($req_url);
+        return $this->jsonRequest($req_url);
     }
     
-    public function checkLink($link) {
-        if(!$this->check_services_first || $match = $this->getUrlMatch($link['url'])) {
-            if($this->check_services_first) {
-                $this->log("  - $match matched $link[url]");
-            }
-            
-            $this->log("  - Asking Embed.ly OEmbed about $link[url]");
-
-            try {
-                $oembed = $this->oEmbedRequest($link['url']);
-                
-                if($this->dao->insert($link['id'], $oembed)) {
-                    $this->log("  - Inserted embed data for $link[url]");
-                }
-            } catch(EmbedlyHTTPErrorException $e) {
-                $this->log('  - Embed.ly returned HTTP error: ' . $e->getMessage());
-            }
-        } else {
-            $this->log("  - No URL match for $link[url]");
-        }
+    public function getOEmbedForURL($url) {
+        return $this->oEmbedRequest($url);
     }
     
-    protected function getUrlMatch($url) {
+    public function getServicesMatch($url) {
         foreach($this->services as $service) {
             foreach($service->regex as $reg) {
                 if(preg_match($reg, $url)) {
-                    return $service->name;
+                    return $service;
                 }
             }
         }

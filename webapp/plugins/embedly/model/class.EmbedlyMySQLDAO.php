@@ -49,8 +49,8 @@ class EmbedlyMySQLDAO extends PDODAO implements EmbedlyDAO {
         $vars = array('link_id' => $link_id);
         
         foreach($param_names as $param_name) {
-            $vars[$param_name] = isset($oembed[$param_name]) ?
-                $oembed[$param_name] : null;
+            $vars[$param_name] = isset($oembed->{$param_name}) ?
+                $oembed->{$param_name} : null;
         }
         
         $result = $this->execute($q, $vars);

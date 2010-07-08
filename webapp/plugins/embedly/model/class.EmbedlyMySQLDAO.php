@@ -28,7 +28,6 @@ class EmbedlyMySQLDAO extends PDODAO implements EmbedlyDAO {
         $result = $this->execute($q, $vars);
 
         $rows = $this->getDataRowsAsArrays($result);
-        $urls = array();
         
         return $rows;
     }

@@ -48,7 +48,9 @@ class EmbedlyClient {
     public function batchedQuery($urls,
         $callback_class_name, $callback_static_method, $callback_extra_args
     ) {
-        echo 'Started batched query with ' . count($urls) . " urls\n";
+        // Most of this code provided by manixrock[at]gmail[dot]com in PHP.net
+        // documentation comments:
+        // http://us3.php.net/manual/en/function.curl-multi-exec.php#88772
         $mcurl = curl_multi_init(); 
         $threads_running = 0; 
         $urls_idx = 0;
@@ -63,8 +65,6 @@ class EmbedlyClient {
                 curl_multi_add_handle($mcurl, $ch);
                 $threads_running++; 
             }
-            
-            echo "$threads_running threads running\n";
             
             // check if all are finished
             if ($threads_running == 0 && count($urls) == 0) {

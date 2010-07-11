@@ -45,8 +45,8 @@ class EmbedlyClient {
         return false;
     }
     
-    public function batchedQuery($urls,
-        $callback_class_name, $callback_static_method, $callback_extra_args
+    public function batchedQuery($urls, $callback_obj,
+        $callback_method, $callback_err_method
     ) {
         // Most of this code provided by manixrock[at]gmail[dot]com in PHP.net
         // documentation comments:
@@ -57,13 +57,21 @@ class EmbedlyClient {
         
         for(;;) {
             // fill up the slots 
-            while ($threads_running < self::BatchMaxThreads && count($urls) > 0) { 
+            while ($threads_running < self::BatchMaxThreads
+                && count($urls) > 0
+            ) {
                 $ch = curl_init(); 
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-                curl_setopt($ch, CURLOPT_TIMEOUT, self::BatchTimeout); 
-                curl_setopt($ch, CURLOPT_URL, $this->makeReqUrl(array_shift($urls))); 
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+                curl_setopt($ch, CURLOPT_TIMEOUT, self::BatchTimeout);
+                curl_setopt($ch, CURLOPT_FAILONERROR, true);
+                
+                $url_idx = key($urls);
+                curl_setopt($ch, CURLOPT_PRIVATE, $url_idx);
+                curl_setopt($ch, CURLOPT_URL,
+                    $this->makeReqUrl($urls[$url_idx]));
                 curl_multi_add_handle($mcurl, $ch);
-                $threads_running++; 
+                $threads_running++;
+                unset($urls[$url_idx]);
             }
             
             // check if all are finished
@@ -73,7 +81,9 @@ class EmbedlyClient {
             
             // let cURL's threads run
             curl_multi_select($mcurl);
-            while(($mc_res = curl_multi_exec($mcurl, $threads_running)) == CURLM_CALL_MULTI_PERFORM) {
+            while (($mc_res = curl_multi_exec($mcurl, $threads_running))
+                == CURLM_CALL_MULTI_PERFORM
+            ) {
                 usleep(50000); 
             }
 
@@ -83,19 +93,23 @@ class EmbedlyClient {
 
             while($done = curl_multi_info_read($mcurl)) { 
                 $ch = $done['handle']; 
-                $done_url       = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL); 
                 $done_content   = curl_multi_getcontent($ch); 
 
-                if(curl_errno($ch) == 0) { 
+                if(curl_errno($ch) == 0
+                    && ($code = curl_getinfo($ch, CURLINFO_HTTP_CODE)) > 0
+                    && $code < 400
+                ) {
                     $oembed = json_decode($done_content);
-                    $args = array_merge(array($oembed, $done_url), $callback_extra_args);
                     
-                    call_user_func_array(
-                        array($callback_class_name, $callback_static_method),
-                        $args
+                    $callback_obj->{$callback_method}(
+                        curl_getinfo($ch, CURLINFO_PRIVATE),
+                        $oembed
                     );
-                } else { 
-                    echo "Link $done_url failed: " . curl_error($ch) . "\n";
+                } else {
+                    $callback_obj->{$callback_err_method}(
+                        curl_getinfo($ch, CURLINFO_PRIVATE),
+                        curl_error($ch)
+                    );
                 }
 
                 curl_multi_remove_handle($mcurl, $ch);

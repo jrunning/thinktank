@@ -19,7 +19,6 @@ class EmbedlyPlugin implements CrawlerPlugin {
         $embedly = new EmbedlyClient();
 
         $links_to_embed = array();
-        $links_to_skip  = array();
 
         foreach($links as $link) {
             if(self::$check_services_first) {
